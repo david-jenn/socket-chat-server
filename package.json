@@ -1,0 +1,33 @@
+{
+  "name": "socket-chat-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start-dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/david-jenn/socket-chat-server.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/david-jenn/socket-chat-server/issues"
+  },
+  "engines": {
+    "node": "16.7.0",
+    "npm": "7.20.3"
+  },
+  "homepage": "https://github.com/david-jenn/socket-chat-server#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "debug": "^4.3.4",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "mongodb": "^4.5.0",
+    "socket.io": "^4.4.1",
+    "ws": "^8.5.0"
+  }
+}
