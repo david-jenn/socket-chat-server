@@ -9,9 +9,10 @@ const app = express();
 
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
-  cors: true,
-  origin: 'https://talk-rooms-david-jenn.com',
-  transports: ['websocket'],
+  cors: {
+    origin: "https://talk-rooms-david-jenn.herokuapp.com",
+    methods: ["GET", "POST"]
+  }
    
 });
 
