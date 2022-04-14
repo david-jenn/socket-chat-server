@@ -13,7 +13,7 @@ module.exports = function(io) {
       socket.join(user.room);
       
       //Shows just to the client
-      socket.emit('message', formatMessage(botName, `Welcome to Tal Rooms! room ${room}!`));
+      socket.emit('message', formatMessage(botName, `Welcome to Talk Rooms! room ${room}!`));
   
       //Shows to everyone else but the client
       socket.broadcast
