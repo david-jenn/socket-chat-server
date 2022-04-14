@@ -9,7 +9,8 @@ const app = express();
 
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
-  cors: {origin: "http://talk-rooms-david-jenn.herokuapp.com/"}
+  cors: true,
+  origins:["https://talk-rooms-david-jenn.herokuapp.com", "http://localhost:3000"]
    
 });
 
