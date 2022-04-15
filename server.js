@@ -31,21 +31,18 @@ app.get('/', function (req, res) {
 });
 
 //SOCKETS
-require('./socketHandlers')(io);
+//require('./socketHandlers')(io);
 
 
 app.use((err, req, res, next) => {
-  
   debugError(err);
   res.status(500).json( {error: err.message} );
 });
 
 
-const hostname = 'localhost'
 const port = process.env.PORT;
 server.listen(port, () => {
   
   debug(`Server listening on port: ${port}`);
   console.log(`Server listening on port: ${port}`);
-  console.log("hello world")
 });

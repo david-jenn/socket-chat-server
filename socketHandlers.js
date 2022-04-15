@@ -1,6 +1,6 @@
 module.exports = function(io) {
 
-  const db = require('./database');
+  //const db = require('./database');
 
   const botName = 'TalkRooms';
 
@@ -40,7 +40,7 @@ module.exports = function(io) {
         message: msg,
         room: user.room,
       }
-      db.insertOneComment(comment);
+     // db.insertOneComment(comment);
       io.to(user.room).emit('message', formatMessage(user.username, msg));
     });
     // Run When Client disconnects
