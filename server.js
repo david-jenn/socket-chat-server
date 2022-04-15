@@ -7,7 +7,7 @@ const path = require('path');
 const http = require("http");
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
-const dbModule = require('./database');
+//const dbModule = require('./database');
 
 const app = express();
 
