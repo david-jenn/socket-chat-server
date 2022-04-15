@@ -31,7 +31,7 @@ app.get('/', function (req, res) {
 });
 
 //SOCKETS
-//require('./socketHandlers')(io);
+require('./socketHandlers')(io);
 
 
 app.use((err, req, res, next) => {
