@@ -1,3 +1,6 @@
+require('dotenv').config()
+
+console.log(process.env)
 const express = require("express");
 const cors = require("cors");
 const path = require('path');
@@ -11,21 +14,24 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
   cors: {
-    origin: ['https://talk-rooms-david-jenn.herokuapp.com'],
-   
-
-  },
+    origin: ['http://localhost:3000'], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
+    credentials: true,
+   },
 });
 
-app.use(cors());
+//app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-//SOCKETS
-require('./socketHandlers')(io);
+
 
 app.use('/api/room', require('./routes/api/room'));
-app.use('/', express.static('public', { index: 'index.html' }));
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+//SOCKETS
+require('./socketHandlers')(io);
 
 
 app.use((err, req, res, next) => {
@@ -34,8 +40,9 @@ app.use((err, req, res, next) => {
   res.status(500).json( {error: err.message} );
 });
 
+
 const hostname = 'localhost'
-const port = 5000;
+const port = process.env.PORT;
 server.listen(port, () => {
   
   debug(`Server listening on port: ${port}`);
