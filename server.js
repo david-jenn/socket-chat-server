@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require('path');
 const http = require("http");
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
@@ -10,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
   cors: {
-    origin: ['http://talk-rooms-david-jenn.herokuapp.com'],
+    origin: ['https://talk-rooms-david-jenn.herokuapp.com'],
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -26,15 +27,6 @@ require('./socketHandlers')(io);
 app.use('/api/room', require('./routes/api/room'));
 app.use('/', express.static('public', { index: 'index.html' }));
 
-app.use((req, res, next) => {
-  const i = 0 
-  if (i === 0) {
-    console.log("hello")
-  }
-
-  debugError(`sorry could not find ${req.originalUrl}`);
-  res.status(404).type('text/plain').send(`Sorry could not find ${req.originalUrl}`);
-});
 
 app.use((err, req, res, next) => {
   
