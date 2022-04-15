@@ -12,8 +12,8 @@ const server = http.createServer(app);
 const io = require('socket.io')(server,{
   cors: {
     origin: ['https://talk-rooms-david-jenn.herokuapp.com'],
-    methods: ["GET", "POST"],
-    credentials: true
+   
+
   },
 });
 
