@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 require('./socketHandlers')(io);
 
 app.use('/api/room', require('./routes/api/room'));
+app.use('/', express.static('public', { index: 'index.html' }));
 
 app.use((req, res, next) => {
   const i = 0 
