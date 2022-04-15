@@ -10,17 +10,15 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
   cors: {
-    origin: "https://talk-rooms-david-jenn.herokuapp.com",
-    methods: ["GET", "POST"]
-  }
-   
+    origin: ['https://talk-rooms-david-jenn.herokuapp.com/']
+  },
 });
 
-//app.use(cors());
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// SOCKETS
+//SOCKETS
 require('./socketHandlers')(io);
 
 app.use('/api/room', require('./routes/api/room'));
