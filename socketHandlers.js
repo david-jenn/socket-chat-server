@@ -59,7 +59,7 @@ module.exports = function (io) {
       }
       let typingOutput = "";
       for(user of typingUsers) {
-        typingOutput += `${username} is typing... `
+        typingOutput += `${user} is typing... `
       }
       console.log(typingOutput);
 
