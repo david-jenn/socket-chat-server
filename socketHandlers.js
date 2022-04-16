@@ -3,12 +3,13 @@ module.exports = function (io) {
 
   const botName = 'TalkRooms';
 
-  let typingUsers = [];
+  
   const users = [];
   let currentRoom;
   let logoutInterval;
 
   io.on('connection', (socket) => {
+    let typingUsers = [];
     socket.on('joinRoom', ({ username, room }) => {
       currentSocket = room;
       socket.join(room);
