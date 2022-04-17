@@ -23,6 +23,8 @@ async function ping() {
   console.log('ping');
 }
 
+const newId = (str) => ObjectId(str);
+
 async function insertOneComment(comment) {
   const db = await connect();
   await db.collection('comments').insertOne({
@@ -42,10 +44,29 @@ async function findRoomsComments(room) {
   return comments
 }
 
+async function findUserByEmail(email) {
+  const db = await connect();
+  const user = await db.collection('user').findOne({
+    email: {
+      $eq: email,
+    },
+  });
+  return user;
+}
+
+async function insertOneUser(user) {
+  const db = await connect();
+
+  await db.collection('user').insertOne(user);
+}
+
 module.exports = {
   connect,
   insertOneComment,
   findRoomsComments,
+  newId,
+  findUserByEmail,
+  insertOneUser,
 }
 
 ping();

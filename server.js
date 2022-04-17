@@ -25,8 +25,9 @@ app.use(express.urlencoded({ extended: false }));
 
 
 
-app.use('/api/room', require('./routes/api/room'));
+
 app.use('/api/comment', require('./routes/api/comment'));
+app.use('/api/user', require('./routes/api/user'));
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
