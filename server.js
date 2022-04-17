@@ -14,12 +14,12 @@ const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
   cors: {
-    origin: ['https://talk-rooms-david-jenn.herokuapp.com'], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
+    origin: ['http://localhost:3000'], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
     credentials: true,
    },
 });
 
-//app.use(cors());
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

@@ -1,3 +1,5 @@
+
+
 module.exports = function (io) {
   const db = require('./database');
 
@@ -14,13 +16,6 @@ module.exports = function (io) {
       currentSocket = room;
       socket.join(room);
       const user = userJoin(socket.id, username, room);
-
-      const comment = {
-        username: "test",
-        message: "Hello World!"
-      }
-      
-      db.insertOneComment(comment);
 
       socket.join(room);
 
@@ -45,9 +40,13 @@ module.exports = function (io) {
     socket.on('chatMessage', (username, msg, room) => {
       // const user = getCurrentUser(socket.id);
       console.log(msg);
+      const comment = {
+        username, msg, room
+      }
 
+      db.insertOneComment(comment);
       console.log(room);
-      // db.insertOneComment(comment);
+     
       io.to(room).emit('message', formatMessage(username, msg));
     });
 
