@@ -1,5 +1,5 @@
 module.exports = function (io) {
-  //const db = require('./database');
+  const db = require('./database');
 
   const botName = 'TalkRooms';
 
@@ -13,10 +13,14 @@ module.exports = function (io) {
     socket.on('joinRoom', ({ username, room }) => {
       currentSocket = room;
       socket.join(room);
-      console.log(socket);
       const user = userJoin(socket.id, username, room);
+
+      const comment = {
+        username: "test",
+        message: "Hello World!"
+      }
       
-      
+      db.insertOneComment(comment);
 
       socket.join(room);
 

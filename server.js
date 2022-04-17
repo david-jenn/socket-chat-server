@@ -7,7 +7,7 @@ const path = require('path');
 const http = require("http");
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
-//const dbModule = require('./database');
+const dbModule = require('./database');
 
 const app = express();
 
@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 
 
 app.use('/api/room', require('./routes/api/room'));
+app.use('/api/comment', require('./routes/api/comment'));
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
