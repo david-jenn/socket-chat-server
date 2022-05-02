@@ -28,6 +28,7 @@ async function issueToken(user) {
   const authPayload = {
     _id: user._id,
     displayName: user.displayName,
+    email: user.email,
   };
 
   const authSecret = process.env.AUTH_SECRET;
@@ -58,10 +59,15 @@ router.post(
     user.password = await bcrypt.hash(user.password, saltRounds);
 
     const emailExists = await dbModule.findUserByEmail(user.email);
+    const displayNameExists = await dbModule.findUserByDisplayName(user.displayName);
 
     if (emailExists) {
       res.status(400).json({
         error: `Email ${user.email} already registered`,
+      });
+    } else if (displayNameExists) {
+      res.status(400).json({
+        error: `Display name ${user.displayName} already registered`,
       });
     } else {
       const authToken = await issueToken(user);
@@ -81,19 +87,18 @@ router.post(
   '/login',
   validBody(loginUserSchema),
   asyncCatch(async (req, res, next) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     const user = await dbModule.findUserByEmail(email);
 
-    if(user && (await bcrypt.compare(password, user.password))) {
-
+    if (user && (await bcrypt.compare(password, user.password))) {
       const authToken = await issueToken(user);
       sendCookie(res, authToken);
 
-      res.json({ message: 'Welcome back ', userId: user._id, token: authToken});
+      res.json({ message: 'Welcome back ', userId: user._id, token: authToken });
     } else {
       res.status(400).json({
-        error: "Invalid Login Credentials"
+        error: 'Invalid Login Credentials',
       });
     }
   })

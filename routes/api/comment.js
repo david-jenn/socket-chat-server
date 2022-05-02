@@ -10,6 +10,7 @@ router.get('/:roomId/list',
     const roomId = req.params.roomId;
 
     const comments = await dbModule.findRoomsComments(roomId);
+    console.log("grabbing from db")
     
     res.status(200).json(comments);
   })
@@ -27,6 +28,7 @@ router.put('/new',
     }
 
     await dbModule.insertOneComment(comment);
+   
     
     res.status(200).json({message: "comment inserted"});
   })

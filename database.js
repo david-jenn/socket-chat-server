@@ -54,6 +54,16 @@ async function findUserByEmail(email) {
   return user;
 }
 
+async function findUserByDisplayName(displayName) {
+  const db = await connect();
+  const user = await db.collection('user').findOne({
+    displayName: {
+      $eq: displayName,
+    },
+  });
+  return user;
+}
+
 async function insertOneUser(user) {
   const db = await connect();
 
@@ -67,6 +77,7 @@ module.exports = {
   newId,
   findUserByEmail,
   insertOneUser,
+  findUserByDisplayName
 }
 
 ping();

@@ -19,8 +19,6 @@ module.exports = function (io) {
 
       socket.join(room);
 
-      //Shows just to the client
-      socket.emit('message', formatMessage(botName, `Welcome to Talk Rooms! room ${room}!`));
 
       //Shows to everyone else but the client
       socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
@@ -94,7 +92,7 @@ module.exports = function (io) {
     const obj = {
       username,
       msg,
-      date: new Date(),
+      timestamp: new Date(),
     };
 
     return obj;
@@ -102,8 +100,11 @@ module.exports = function (io) {
 
   function userJoin(id, username, room) {
     const user = { id, username, room };
-
-    users.push(user);
+    const duplicateUsers = users.filter((x) => x.username === user.username && x.room === user.room);
+    if(duplicateUsers.length === 0) {
+      users.push(user);
+    }
+    
     return user;
   }
 
