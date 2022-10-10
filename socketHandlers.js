@@ -11,6 +11,7 @@ module.exports = function (io) {
   let logoutInterval;
 
   io.on('connection', (socket) => {
+    checkInactivity(socket);
     let typingUsers = [];
     socket.on('joinRoom', ({ username, room }) => {
       currentSocket = room;
@@ -36,6 +37,8 @@ module.exports = function (io) {
     //Listen for chatMessage
 
     socket.on('chatMessage', (username, msg, room) => {
+
+      checkInactivity(socket);
       // const user = getCurrentUser(socket.id);
       console.log(msg);
       const comment = {
@@ -50,7 +53,9 @@ module.exports = function (io) {
 
     //check for a user typing
     socket.on('typing', (username, typing, room) => {
-     
+
+      checkInactivity(socket);
+      
       if (typing) {
         if (!typingUsers.includes(username)) {
           typingUsers.push(username);
@@ -73,7 +78,7 @@ module.exports = function (io) {
     // Run When Client disconnects
     socket.on('disconnect', () => {
 
-      
+      console.log('disconnected...')
       const user = userLeave(socket.id);
       if (user) {
         io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left...`));
@@ -121,5 +126,24 @@ module.exports = function (io) {
 
   function getRoomUsers(room) {
     return users.filter((user) => user.room === room);
+  }
+
+  function checkInactivity(socket) {
+    clearTimeout(socket.inactivityTimeout);
+      socket.inactivityTimeout = setTimeout(() => {
+        socket.disconnect(true)
+        const user = userLeave(socket.id);
+      if (user) {
+        io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left...`));
+        console.log('a user has left...');
+
+        //Send users and room info
+        io.to(user.room).emit('roomUsers', {
+          room: user.room,
+          users: getRoomUsers(user.room),
+        });
+      }
+      
+      }, 3000);
   }
 };
