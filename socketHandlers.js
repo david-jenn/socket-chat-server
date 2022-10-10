@@ -144,6 +144,6 @@ module.exports = function (io) {
         });
       }
       
-      }, 3000);
+      }, 300000);
   }
 };
