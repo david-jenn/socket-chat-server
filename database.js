@@ -23,7 +23,15 @@ async function ping() {
   console.log('ping');
 }
 
-const newId = (str) => ObjectId(str);
+const newId = (str) => ObjectId(str)
+
+async function insertNewRoom(room) {
+  const db = await connect();
+  await db.collection('rooms').insertOne({
+    ...room,
+    timestamp: new Date()
+  })
+}
 
 async function insertOneComment(comment) {
   const db = await connect();
@@ -42,6 +50,32 @@ async function findRoomsComments(room) {
   })
   .toArray();
   return comments
+}
+
+async function findRooms() {
+  const db = await connect();
+  const rooms = await db.collection('rooms').find({}).toArray();
+  return rooms;
+}
+async function findOneRoom(roomId) {
+  roomIdMongo = new ObjectId(roomId);
+  const db = await connect();
+  const room = await db.collection('rooms').findOne({
+    _id: {
+      $eq: roomIdMongo,
+    },
+  })
+  return room
+}
+
+async function findRoomByName(name) {
+  const db = await connect();
+  const room = await db.collection('rooms').findOne({
+    name: {
+      $eq: name
+    },
+  });
+  return room;
 }
 
 async function findUserByEmail(email) {
@@ -77,7 +111,11 @@ module.exports = {
   newId,
   findUserByEmail,
   insertOneUser,
-  findUserByDisplayName
+  findUserByDisplayName,
+  findRooms,
+  findOneRoom,
+  insertNewRoom,
+  findRoomByName
 }
 
 ping();
