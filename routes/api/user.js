@@ -14,9 +14,6 @@ const registerUserSchema = Joi.object({
   email: Joi.string().trim().min(3).email().required(),
   displayName: Joi.string().trim().min(3).required(),
   password: Joi.string().trim().min(8).required(),
-  fullName: Joi.string().trim().min(2).required(),
-  firstName: Joi.string().trim().min(1).required(),
-  lastName: Joi.string().trim().min(1).required(),
 });
 
 const loginUserSchema = Joi.object({
@@ -41,7 +38,7 @@ function sendCookie(res, authToken) {
   const cookieOptions = { httpOnly: true, maxAge: 14400000 };
   res.cookie('authToken', authToken, cookieOptions);
 }
-
+4
 const router = express.Router();
 
 //routes
