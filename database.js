@@ -104,6 +104,12 @@ async function insertOneUser(user) {
   await db.collection('user').insertOne(user);
 }
 
+async function insertFriendRequest(friendRequest) {
+  const db = await connect();
+  await db.collection('friendRequest').insertOne({...friendRequest, timestamp: new Date()});
+}
+
+
 module.exports = {
   connect,
   insertOneComment,
@@ -115,7 +121,8 @@ module.exports = {
   findRooms,
   findOneRoom,
   insertNewRoom,
-  findRoomByName
+  findRoomByName,
+  insertFriendRequest
 }
 
 ping();

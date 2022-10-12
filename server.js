@@ -11,9 +11,6 @@ const dbModule = require('./database');
 
 const app = express();
 
-
-
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -21,18 +18,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/comment', require('./routes/api/comment'));
 app.use('/api/user', require('./routes/api/user'));
 app.use('/api/room', require('./routes/api/room'));
+app.use('/api/friendRequest', require('./routes/api/friendRequest'))
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
-
-
-
 
 app.use((err, req, res, next) => {
   debugError(err);
   res.status(500).json( {error: err.message} );
 });
-
 
 const port = process.env.PORT;
 const server = app.listen(port, () => {
@@ -50,5 +44,5 @@ const io = require('socket.io')(server,{
 });
 
 
-//SOCKETS
+//SOCKET Logic
 require('./socketHandlers')(io);

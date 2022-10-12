@@ -38,10 +38,31 @@ function sendCookie(res, authToken) {
   const cookieOptions = { httpOnly: true, maxAge: 14400000 };
   res.cookie('authToken', authToken, cookieOptions);
 }
-4
+4;
 const router = express.Router();
 
 //routes
+
+router.get(
+  '/list',
+  asyncCatch(async (req, res, next) => {
+    console.log('fired');
+    let { keyword } = req.query;
+
+    const match = {};
+
+    if (keyword) {
+      match.$text = { $search: keyword };
+    }
+
+    const pipeline = [{ $match: match }];
+
+    const db = await dbModule.connect();
+    const cursor = db.collection('user').aggregate(pipeline);
+    const results = await cursor.toArray();
+    res.status(200).send(results);
+  })
+);
 
 router.post(
   '/register',
