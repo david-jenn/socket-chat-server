@@ -1,6 +1,4 @@
 require('dotenv').config()
-
-
 const express = require("express");
 const cors = require("cors");
 const path = require('path');
@@ -18,7 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/comment', require('./routes/api/comment'));
 app.use('/api/user', require('./routes/api/user'));
 app.use('/api/room', require('./routes/api/room'));
-app.use('/api/friendRequest', require('./routes/api/friendRequest'))
+app.use('/api/friend', require('./routes/api/friend'))
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
@@ -38,7 +36,7 @@ const server = app.listen(port, () => {
 const io = require('socket.io')(server,{
   pingTimeout: 6000,
   cors: {
-    origin: 'https://talk-rooms-david-jenn.herokuapp.com', //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
+    origin: ['https://talk-rooms-david-jenn.herokuapp.com', 'http://localhost:3000' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
     credentials: true,
    },
 });

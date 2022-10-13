@@ -50,7 +50,6 @@ router.get(
     let { keyword } = req.query;
 
     const match = {};
-
     if (keyword) {
       match.$text = { $search: keyword };
     }
@@ -61,6 +60,22 @@ router.get(
     const cursor = db.collection('user').aggregate(pipeline);
     const results = await cursor.toArray();
     res.status(200).send(results);
+  })
+);
+
+router.get(
+  '/:userId',
+  asyncCatch(async (req, res, next) => {
+    const userId = req.params.userId;
+    const userIdObject = dbModule.newId(userId);
+    const user = await dbModule.findUserById(userIdObject);
+
+    if(!user) {
+      res.status(404).json({error: 'User not found'});
+    } else {
+      res.status(200).json(user);
+    }
+
   })
 );
 

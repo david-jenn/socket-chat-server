@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ObjectId, ConnectionCreatedEvent } = require('mongodb');
 
 let _db = null;
 
@@ -78,6 +78,16 @@ async function findRoomByName(name) {
   return room;
 }
 
+async function findUserById(id) {
+  const db = await connect();
+  const user = await db.collection('user').findOne({
+    _id: {
+      $eq: id,
+    }
+  })
+  return user;
+}
+
 async function findUserByEmail(email) {
   const db = await connect();
   const user = await db.collection('user').findOne({
@@ -109,6 +119,35 @@ async function insertFriendRequest(friendRequest) {
   await db.collection('friendRequest').insertOne({...friendRequest, timestamp: new Date()});
 }
 
+async function findUserFriendRequests(userId) {
+
+  const db = await connect();
+  const requests = await db.collection('friendRequest').find({
+    'friend.id': {
+      $eq: userId
+    }
+  }).toArray();
+  return requests;
+}
+
+async function insertNewFriendConnection(friendConnection) {
+  const db = await connect();
+ 
+  await db.collection('friendConnection').insertOne(friendConnection);
+}
+
+async function findUsersFriends(userId) {
+  console.log('in friends data ' + userId);
+  const db = await connect();
+  const friends = await db.collection('friendConnection').find({
+    userId: {
+      $eq: userId
+    }
+  }).toArray();
+
+  return friends;
+}
+
 
 module.exports = {
   connect,
@@ -116,13 +155,17 @@ module.exports = {
   findRoomsComments,
   newId,
   findUserByEmail,
+  findUserById,
   insertOneUser,
   findUserByDisplayName,
   findRooms,
   findOneRoom,
   insertNewRoom,
   findRoomByName,
-  insertFriendRequest
+  insertFriendRequest,
+  insertNewFriendConnection,
+  findUserFriendRequests,
+  findUsersFriends
 }
 
 ping();
