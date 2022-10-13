@@ -1,11 +1,10 @@
-require('dotenv').config()
+require('dotenv').config();
 const { MongoClient, ObjectId, ConnectionCreatedEvent } = require('mongodb');
 
 let _db = null;
 
 async function connect() {
-  if(!_db) {
-    console.log(process.env.DB_NAME);
+  if (!_db) {
     const dbUrl = process.env.DB_URL;
     const dbName = process.env.DB_NAME;
     const client = await MongoClient.connect(dbUrl);
@@ -18,38 +17,40 @@ async function connect() {
 async function ping() {
   const db = await connect();
   await db.command({
-    ping: 1
+    ping: 1,
   });
   console.log('ping');
 }
 
-const newId = (str) => ObjectId(str)
+const newId = (str) => ObjectId(str);
 
 async function insertNewRoom(room) {
   const db = await connect();
   await db.collection('rooms').insertOne({
     ...room,
-    timestamp: new Date()
-  })
+    timestamp: new Date(),
+  });
 }
 
 async function insertOneComment(comment) {
   const db = await connect();
   await db.collection('comments').insertOne({
     ...comment,
-    timestamp: new Date()
-  })
+    timestamp: new Date(),
+  });
 }
 
 async function findRoomsComments(room) {
   const db = await connect();
-  const comments = await db.collection('comments').find({
-    room: {
-      $eq: room,
-    },
-  })
-  .toArray();
-  return comments
+  const comments = await db
+    .collection('comments')
+    .find({
+      room: {
+        $eq: room,
+      },
+    })
+    .toArray();
+  return comments;
 }
 
 async function findRooms() {
@@ -64,15 +65,15 @@ async function findOneRoom(roomId) {
     _id: {
       $eq: roomIdMongo,
     },
-  })
-  return room
+  });
+  return room;
 }
 
 async function findRoomByName(name) {
   const db = await connect();
   const room = await db.collection('rooms').findOne({
     name: {
-      $eq: name
+      $eq: name,
     },
   });
   return room;
@@ -83,8 +84,8 @@ async function findUserById(id) {
   const user = await db.collection('user').findOne({
     _id: {
       $eq: id,
-    }
-  })
+    },
+  });
   return user;
 }
 
@@ -116,38 +117,78 @@ async function insertOneUser(user) {
 
 async function insertFriendRequest(friendRequest) {
   const db = await connect();
-  await db.collection('friendRequest').insertOne({...friendRequest, timestamp: new Date()});
+  await db.collection('friendRequest').insertOne({ ...friendRequest, timestamp: new Date() });
 }
 
 async function findUserFriendRequests(userId) {
-
   const db = await connect();
-  const requests = await db.collection('friendRequest').find({
-    'friend.id': {
-      $eq: userId
-    }
-  }).toArray();
+  const requests = await db
+    .collection('friendRequest')
+    .find({
+      'friend.id': {
+        $eq: userId,
+      },
+      accepted: {
+        $eq: false
+      }
+    })
+    .toArray();
   return requests;
+}
+
+async function findOneFriend(userId, friendId) {
+  const db = await connect();
+
+  const friend = await db.collection('friendConnection').findOne({
+    userId: {
+      $eq: userId,
+    },
+    'friend.id': {
+      $eq: friendId,
+    },
+  });
+
+  return friend;
 }
 
 async function insertNewFriendConnection(friendConnection) {
   const db = await connect();
- 
+
   await db.collection('friendConnection').insertOne(friendConnection);
 }
 
-async function findUsersFriends(userId) {
-  console.log('in friends data ' + userId);
+async function updateFriendRequests(userId, friendId) {
   const db = await connect();
-  const friends = await db.collection('friendConnection').find({
-    userId: {
-      $eq: userId
+  db.collection('friendRequest').update(
+    {
+      'sender.id': {
+        $eq: friendId,
+      },
+      'friend.id': {
+        $eq: userId,
+      },
+    },
+    {
+      $set: {
+        accepted: true
+      },
     }
-  }).toArray();
+  );
+}
+
+async function findUsersFriends(userId) {
+  const db = await connect();
+  const friends = await db
+    .collection('friendConnection')
+    .find({
+      userId: {
+        $eq: userId,
+      },
+    })
+    .toArray();
 
   return friends;
 }
-
 
 module.exports = {
   connect,
@@ -165,7 +206,9 @@ module.exports = {
   insertFriendRequest,
   insertNewFriendConnection,
   findUserFriendRequests,
-  findUsersFriends
-}
+  updateFriendRequests,
+  findUsersFriends,
+  findOneFriend,
+};
 
 ping();
