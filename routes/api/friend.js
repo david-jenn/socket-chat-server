@@ -10,7 +10,6 @@ router.get(
   '/friend-list/:userId',
   asyncCatch(async (req, res, next) => {
     const userId = req.params.userId;
-    console.log('id = ' + userId);
     const friends = await dbModule.findUsersFriends(userId);
     if (!friends) {
       res.status(404).json({ error: 'friends not found' });
@@ -25,9 +24,8 @@ router.get(
   asyncCatch(async (req, res, next) => {
     const userId = req.params.userId;
     const friendId = req.params.friendId;
-
+   
     const friend = await dbModule.findOneFriend(userId, friendId);
-    console.log(friend);
     if (!friend) {
       res.status(404).json({ error: 'Friend not found' });
     } else {
@@ -55,7 +53,6 @@ router.get(
       }
     }
 
-    console.log(uniqueRequests.length);
     res.status(200).json(uniqueRequests);
   })
 );
@@ -65,10 +62,13 @@ router.put(
   asyncCatch(async (req, res, next) => {
     const friendRequest = req.body;
     const userId = req.body.sender?.id;
-    const friendId = req.body.friend?.id;
-
+    const friendId = req.body.friend?.id; 
     const existingFriend = await dbModule.findOneFriend(userId, friendId);
-    console.log(existingFriend);
+  
+    if(friendId === userId) {
+      res.status(400).json({error: `Cannot friend request yourself`});
+    }
+   
     if (existingFriend) {
       res.status(400).json({ error: `Already friends with this person` });
     } else {
@@ -96,6 +96,9 @@ router.put(
       connectionData.connectionOne.id,
       connectionData.connectionTwo.id
     );
+    if(connectionData.connectionOne.id === connectionData.connectionTwo.id) {
+      res.status(400).json({error: 'Cannot accept request from yourself'});
+    }
     if (existingFriend) {
       res.status(400).json({ error: 'Friend already exists' });
     } else {
