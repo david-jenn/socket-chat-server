@@ -130,6 +130,28 @@ async function findUserFriendRequests(userId) {
       },
       accepted: {
         $eq: false
+      },
+      canceled: {
+        $ne: true
+      }
+    })
+    .toArray();
+  return requests;
+}
+
+async function findSentFriendRequests(userId) {
+  const db = await connect();
+  const requests = await db
+    .collection('friendRequest')
+    .find({
+      'sender.id': {
+        $eq: userId,
+      },
+      accepted: {
+        $eq: false
+      },
+      canceled: {
+        $ne: true
       }
     })
     .toArray();
@@ -157,9 +179,9 @@ async function insertNewFriendConnection(friendConnection) {
   await db.collection('friendConnection').insertOne(friendConnection);
 }
 
-async function updateFriendRequests(userId, friendId) {
+async function acceptFriendRequests(userId, friendId) {
   const db = await connect();
-  db.collection('friendRequest').update(
+  db.collection('friendRequest').updateMany(
     {
       'sender.id': {
         $eq: friendId,
@@ -171,6 +193,24 @@ async function updateFriendRequests(userId, friendId) {
     {
       $set: {
         accepted: true
+      },
+    }
+  );
+}
+async function cancelFriendRequests(userId, friendId) {
+  const db = await connect();
+  db.collection('friendRequest').updateMany(
+    {
+      'sender.id': {
+        $eq: friendId,
+      },
+      'friend.id': {
+        $eq: userId,
+      },
+    },
+    {
+      $set: {
+        canceled: true
       },
     }
   );
@@ -206,9 +246,12 @@ module.exports = {
   insertFriendRequest,
   insertNewFriendConnection,
   findUserFriendRequests,
-  updateFriendRequests,
+  findSentFriendRequests,
+  acceptFriendRequests,
+  cancelFriendRequests,
   findUsersFriends,
   findOneFriend,
+  
 };
 
 ping();

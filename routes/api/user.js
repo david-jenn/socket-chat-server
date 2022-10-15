@@ -66,10 +66,11 @@ router.get(
 router.get(
   '/:userId',
   asyncCatch(async (req, res, next) => {
+    const io = req.app.get('io');
     const userId = req.params.userId;
     const userIdObject = dbModule.newId(userId);
     const user = await dbModule.findUserById(userIdObject);
-
+    
     if(!user) {
       res.status(404).json({error: 'User not found'});
     } else {

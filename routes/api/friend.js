@@ -2,6 +2,8 @@ const express = require('express');
 const { Timestamp } = require('mongodb');
 const dbModule = require('../../database');
 
+
+
 const asyncCatch = require('../../middleware/async-catch');
 
 const router = express.Router();
@@ -24,7 +26,7 @@ router.get(
   asyncCatch(async (req, res, next) => {
     const userId = req.params.userId;
     const friendId = req.params.friendId;
-   
+    
     const friend = await dbModule.findOneFriend(userId, friendId);
     if (!friend) {
       res.status(404).json({ error: 'Friend not found' });
@@ -57,14 +59,44 @@ router.get(
   })
 );
 
+router.get(
+  '/sent-requests/:userId',
+  asyncCatch(async (req, res, next) => {
+    const userId = req.params.userId;
+
+    const requests = await dbModule.findSentFriendRequests(userId);
+    requests.sort((a, b) => {
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+
+    const mostRecentUniqueRequests = [];
+    const uniqueRequests = [];
+    for (request of requests) {
+      if (!mostRecentUniqueRequests.includes(request.friend.id)) {
+        mostRecentUniqueRequests.push(request.friend.id);
+        uniqueRequests.push(request);
+      }
+    }
+    console.log(uniqueRequests);
+
+    res.status(200).json(uniqueRequests);
+  })
+);
+
+
+
+
+
 router.put(
   '/send-request',
   asyncCatch(async (req, res, next) => {
+    const io = req.app.get('io');
+    // io.emit('test', 'testing send request')
     const friendRequest = req.body;
     const userId = req.body.sender?.id;
     const friendId = req.body.friend?.id; 
     const existingFriend = await dbModule.findOneFriend(userId, friendId);
-  
+    
     if(friendId === userId) {
       res.status(400).json({error: `Cannot friend request yourself`});
     }
@@ -77,6 +109,13 @@ router.put(
     }
   })
 );
+
+router.put('/cancel-request', asyncCatch(async (req, res,next) => {
+  const connectionData = req.body;
+    await dbModule.cancelFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
+    res.status(200).json({ message: 'Friend Request Canceled' });
+  
+}))
 
 router.put(
   '/accept-request',
@@ -104,7 +143,7 @@ router.put(
     } else {
       await dbModule.insertNewFriendConnection(connectionOne);
       await dbModule.insertNewFriendConnection(connectionTwo);
-      await dbModule.updateFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
+      await dbModule.acceptFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
 
       res.status(200).json({ message: 'Friend added!' });
     }
