@@ -13,18 +13,18 @@ const app = express();
 
 app.enable('trust proxy')
 
-app.use(function(request, response, next) {
 
-  if (process.env.NODE_ENV != 'development' && !request.secure) {
-     return response.redirect("https://" + request.headers.host + request.url);
-  }
-
-  next();
-})
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.get('*',function(req,res,next){
+  if(req.headers['x-forwarded-proto']!='https')
+    res.redirect('https://mypreferreddomain.com'+req.url)
+  else
+    next() /* Continue to other routes if we're not redirecting */
+})
 
 
 app.use('/api/comment', require('./routes/api/comment'));
@@ -47,7 +47,7 @@ const server = app.listen(port, () => {
   console.log(`Server listening on port: ${port}`);
 });
 
-const io = require('socket.io')(server,{
+const io = require('socket.io')(server, {
  pingTimeout: 10000,
   cors: {
     origin: ['https://talk-rooms-david-jenn.herokuapp.com', 'http://localhost:3000' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
