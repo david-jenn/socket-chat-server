@@ -3,15 +3,18 @@ const express = require("express");
 const cors = require("cors");
 const path = require('path');
 const http = require("http");
+const enforce = require('express-sslify');
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
 const dbModule = require('./database');
 
 const app = express();
 
+app.use(enforce.HTTPS({trustProtoHeader: true}))
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 
 app.use('/api/comment', require('./routes/api/comment'));
 app.use('/api/user', require('./routes/api/user'));
