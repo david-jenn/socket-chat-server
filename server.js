@@ -3,14 +3,23 @@ const express = require("express");
 const cors = require("cors");
 const path = require('path');
 const http = require("http");
-const enforce = require('express-sslify');
+
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
 const dbModule = require('./database');
 
 const app = express();
 
-app.use(enforce.HTTPS({trustProtoHeader: true}))
+const forceSsl = function (req, res, next) {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(['https://', req.get('Host'), req.url].join(''));
+  }
+  return next();
+};
+
+app.use(forceSsl);
+
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
