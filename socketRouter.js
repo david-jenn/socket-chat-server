@@ -31,6 +31,7 @@ module.exports = function (io) {
       for (user of users) {
         if (user._id === friendId) {
           friend = user;
+          user.socketId = socket._id;
         }
         if(user._id === userId) {
           sender = user
