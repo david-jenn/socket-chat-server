@@ -10,15 +10,17 @@ const dbModule = require('./database');
 
 const app = express();
 
-const forceSsl = function (req, res, next) {
-  if (req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect(['https://', req.get('Host'), req.url].join(''));
+
+app.enable('trust proxy')
+
+app.use(function(request, response, next) {
+
+  if (process.env.NODE_ENV != 'development' && !request.secure) {
+     return response.redirect("https://" + request.headers.host + request.url);
   }
-  return next();
-};
 
-app.use(forceSsl);
-
+  next();
+})
 
 app.use(cors());
 app.use(express.json());
