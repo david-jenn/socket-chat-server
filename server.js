@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require('path');
 const http = require("http");
+const sslRedirect = require('heroku-ssl-redirect');
 
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
@@ -10,21 +11,14 @@ const dbModule = require('./database');
 
 const app = express();
 
-
-app.enable('trust proxy')
-
+app.use(sslRedirect());
 
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('*',function(req,res,next){
-  if(req.headers['x-forwarded-proto']!='https')
-    res.redirect('https://mypreferreddomain.com'+req.url)
-  else
-    next() /* Continue to other routes if we're not redirecting */
-})
+
 
 
 app.use('/api/comment', require('./routes/api/comment'));
