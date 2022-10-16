@@ -129,7 +129,7 @@ module.exports = function (io) {
       socket.join(room);
 
       //Shows to everyone else but the client
-      socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
+      // socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
 
       //Shows to everyone
       // io.emit('info', 'Hello World')
