@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require('path');
 const http = require("http");
-const sslRedirect = require('heroku-ssl-redirect');
+
 
 const debug = require('debug')('app:server');
 const debugError = require('debug')('app:error');
@@ -11,7 +11,7 @@ const dbModule = require('./database');
 
 const app = express();
 
-app.use(sslRedirect());
+
 
 
 app.use(cors());
