@@ -39,6 +39,22 @@ router.get(
   })
 );
 
+
+router.put('/join/direct-chat', asyncCatch(async (req, res, next) => {
+  const directChat = req.body;
+  console.log(directChat.id);
+
+  const chatExists = await dbModule.findDirectChatById(directChat.id);
+
+  if(chatExists) {
+    res.status(200).json({message: 'room already exists'})
+  } else {
+    dbModule.insertDirectChatRoom(directChat.id);
+    res.status(200).json({message: 'creating new room'})
+  }
+
+}))
+
 router.put(
   '/new',
   asyncCatch(async (req, res, next) => {

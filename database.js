@@ -24,14 +24,35 @@ async function ping() {
 
 const newId = (str) => ObjectId(str);
 
-async function insertNewRoom(room) {
+async function insertDirectChatRoom(roomId) {
   const db = await connect();
-  await db.collection('rooms').insertOne({
-    ...room,
-    timestamp: new Date(),
-  });
+
+  await db.collection('directChatRoom').insertOne({
+    _id: roomId,
+    timestamp: new Date()
+  })
 }
 
+async function findDirectChatById(id) {
+  const db = await connect();
+  const room = await db.collection('directChatRoom').findOne({
+    _id: {
+      $eq: id,
+    },
+  });
+  return room;
+}
+
+
+//Deprecated
+// async function insertNewRoom(room) {
+//   const db = await connect();
+//   await db.collection('rooms').insertOne({
+//     ...room,
+//     timestamp: new Date(),
+//   });
+// }
+//Deprecated
 async function insertOneComment(comment) {
   const db = await connect();
   await db.collection('comments').insertOne({
@@ -39,7 +60,7 @@ async function insertOneComment(comment) {
     timestamp: new Date(),
   });
 }
-
+//Deprecated
 async function findRoomsComments(room) {
   const db = await connect();
   const comments = await db
@@ -212,7 +233,13 @@ async function cancelFriendRequests(userId, friendId) {
       $set: {
         canceled: true
       },
+    },
+    {
+      $set: {
+        accepted: false
+      }
     }
+
   );
 }
 
@@ -241,7 +268,8 @@ module.exports = {
   findUserByDisplayName,
   findRooms,
   findOneRoom,
-  insertNewRoom,
+  insertDirectChatRoom,
+  findDirectChatById,
   findRoomByName,
   insertFriendRequest,
   insertNewFriendConnection,

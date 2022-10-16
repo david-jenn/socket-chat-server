@@ -34,9 +34,9 @@ const server = app.listen(port, () => {
 });
 
 const io = require('socket.io')(server,{
-  // pingTimeout: 6000,
+ pingTimeout: 10000,
   cors: {
-    origin: ['https://talk-rooms-david-jenn.herokuapp.com', 'http://localhost:3000' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
+    origin: ['https://talk-rooms-david-jenn.herokuapp.com', 'http://localhost:3000', 'http://192.168.0.16:3000/' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
     credentials: true,
    },
 });

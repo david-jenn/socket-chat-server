@@ -50,111 +50,136 @@ module.exports = function (io) {
     });
 
 
-    socket.on('ACCEPT_REQUEST', ({friendId, userDisplayName, userId}) => {
+    socket.on('ACCEPT_REQUEST', (data) => {
       let friend;
       let sender;
-      console.log(userId);
+
       for (user of users) {
-        if (user._id === friendId) {
+        if (user._id === data.receiver?.id) {
           friend = user;
         }
-        if(user._id === userId) {
+        if(user._id === data.sender?._id) {
           sender = user
         }
       }
       console.log('sender: ' + sender);
       if(friend) {
-        console.log('sending ACCEPT_REQUEST to: ' + friend.socketId);
-        io.to(friend.socketId).emit('REQUEST_ACCEPTED', `You are now friends with ${userDisplayName}`);
+        console.log('sending REQUEST_ACCEPTED_RECEIVER to: ' + friend.socketId);
+        io.to(friend.socketId).emit('REQUEST_ACCEPTED_RECEIVER', data);
       }
       if(sender) {
-        console.log('sending ACCEPT_REQUEST to: ' + sender.socketId);
-        io.to(sender.socketId).emit('REQUEST_ACCEPTED', `You are now friends with ${sender.displayName}`);
+        console.log('sending REQUEST_ACCEPT_SENDER to: ' + sender.socketId);
+        io.to(sender.socketId).emit('REQUEST_ACCEPTED_SENDER', data);
       }
     })
 
-    socket.on('CANCEL_REQUEST', ({friendId, userDisplayName, userId}) => { 
+    socket.on('REJECT_REQUEST', (data) => {
       let friend;
       let sender;
-      console.log(userId);
+
       for (user of users) {
-        if (user._id === friendId) {
+        if (user._id === data.receiver?.id) {
           friend = user;
         }
-        if(user._id === userId) {
+        if(user._id === data.sender?._id) {
+          sender = user
+        }
+      }
+
+      if(friend) {
+        console.log('sending REQUEST_REJECTED_RECEIVER to: ' + friend.socketId);
+        io.to(friend.socketId).emit('REQUEST_REJECTED_RECEIVER', data);
+      }
+      if(sender) {
+        console.log('sending REQUEST_ACCEPT_SENDER to: ' + sender.socketId);
+        io.to(sender.socketId).emit('REQUEST_REJECTED_SENDER', data);
+      }
+    })
+
+    socket.on('CANCEL_REQUEST', (data) => { 
+      let friend;
+      let sender;
+      console.log(data);
+      for (user of users) {
+        if (user._id === data.receiver?.id) {
+          friend = user;
+        }
+        if(user._id === data.sender?._id) {
           sender = user
         }
       }
       console.log('sender: ' + sender);
       if(friend) {
         console.log('sending CANCEL_REQUEST_RECEIVER to: ' + friend.socketId);
-        io.to(friend.socketId).emit('REQUEST_CANCELED_RECEIVER', `Request from ${userDisplayName} canceled`);
+        
+        io.to(friend.socketId).emit('REQUEST_CANCELED_RECEIVER', data);
       }
       if(sender) {
         console.log('sending CANCEL_REQUEST_SENDER to: ' + sender.socketId);
-        io.to(sender.socketId).emit('REQUEST_CANCELED_SENDER', `You Request to ${sender.displayName} canceled`);
+        
+        io.to(sender.socketId).emit('REQUEST_CANCELED_SENDER', data);
       }
     })
 
-    // socket.on('joinRoom', ({ username, room }) => {
-    //   currentSocket = room;
-    //   socket.join(room);
-    //   const user = userJoin(socket.id, username, room);
+    socket.on('joinRoom', ({ username, room }) => {
+      currentSocket = room;
+      socket.join(room);
+      const user = userJoin(socket.id, username, room);
 
-    //   socket.join(room);
+      socket.join(room);
 
-    //   //Shows to everyone else but the client
-    //   socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
+      //Shows to everyone else but the client
+      socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
 
-    //   //Shows to everyone
-    //   // io.emit('info', 'Hello World')
+      //Shows to everyone
+      // io.emit('info', 'Hello World')
 
-    //   //Send users and room info
-    //   io.to(user.room).emit('roomUsers', {
-    //     room: user.room,
-    //     users: getRoomUsers(user.room),
-    //   });
-    // });
+      //Send users and room info
+      io.to(user.room).emit('roomUsers', {
+        room: user.room,
+        users: getRoomUsers(user.room),
+      });
+    });
 
-    // //Listen for chatMessage
+    //Listen for chatMessage
 
-    // socket.on('chatMessage', (username, msg, room) => {
+    socket.on('chatMessage', (username, msg, room) => {
 
-    //   checkInactivity(socket);
-    //   // const user = getCurrentUser(socket.id);
-    //   console.log(msg);
-    //   const comment = {
-    //     username, msg, room
-    //   }
+      checkInactivity(socket);
+      // const user = getCurrentUser(socket.id);
+      console.log(msg);
+      const comment = {
+        username, msg, room
+      }
 
-    //   db.insertOneComment(comment);
-    //   console.log(room);
+      db.insertOneComment(comment);
+      console.log(room);
 
-    //   io.to(room).emit('message', formatMessage(username, msg));
-    // });
+      io.to(room).emit('message', formatMessage(username, msg));
+    });
 
-    // //check for a user typing
-    // socket.on('typing', (username, typing, room) => {
+    //check for a user typing
+    socket.on('typing', (username, typing, room) => {
 
-    //   checkInactivity(socket);
+      checkInactivity(socket);
 
-    //   if (typing) {
-    //     if (!typingUsers.includes(username)) {
-    //       typingUsers.push(username);
-    //     }
-    //   } else {
-    //     let copy = typingUsers.filter((x) => x != username);
-    //     typingUsers = [...copy];
-    //   }
-    //   let typingOutput = "";
-    //   for(user of typingUsers) {
-    //     typingOutput += `${user} is typing... `
-    //   }
-    //   console.log(typingOutput);
+      if (typing) {
+        if (!typingUsers.includes(username)) {
+          typingUsers.push(username);
+        }
+      } else {
+        let copy = typingUsers.filter((x) => x != username);
+        typingUsers = [...copy];
+      }
+      let typingOutput = "";
+      for(user of typingUsers) {
+        typingOutput += `${user} is typing... `
+      }
+      console.log(typingOutput);
 
-    //   io.to(room).emit('typingOutput', typingOutput);
+      io.to(room).emit('typingOutput', typingOutput);
 
-    // });
+    });
 
     // Run When Client disconnects
     socket.on('disconnect', () => {
