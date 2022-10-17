@@ -146,19 +146,8 @@ module.exports = function (io) {
 
     //Listen for chatMessage
 
-    socket.on('chatMessage', (username, msg, room) => {
-     
-      // const user = getCurrentUser(socket.id);
-
-      const comment = {
-        username,
-        msg,
-        room,
-      };
-
-      db.insertOneComment(comment);
-
-      io.to(room).emit('message', formatMessage(username, msg));
+    socket.on('CHAT_MESSAGE', (displayName, userId, msg, room) => {
+      io.to(room).emit('message', formatMessage(displayName, userId, msg));
     });
 
     //check for a user typing
@@ -190,9 +179,10 @@ module.exports = function (io) {
     });
   });
 
-  function formatMessage(username, msg) {
+  function formatMessage(displayName, userId, msg) {
     const obj = {
-      username,
+      displayName,
+      userId,
       msg,
       timestamp: new Date(),
     };

@@ -18,14 +18,7 @@ router.get('/:roomId/list',
 
 router.put('/new',
   asyncCatch(async (req, res, next) => {
-    const roomId = req.params.roomId;
-
-    const comment = {
-      username:"Test User",
-      message: "This is a test of inserting comments",
-      room: "abc",
-      date: new Date()
-    }
+    const comment = req.body;
 
     await dbModule.insertOneComment(comment);
    
