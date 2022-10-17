@@ -15,18 +15,20 @@ module.exports = function (io) {
     console.log(socket.id);
 
     socket.on('USER_JOIN', (newUser) => {
-      const updateUsers = users.filter((user) => {
-        return user.socketId === user._id;
-      });
-      users = [...updateUsers];
+      // const updateUsers = users.filter((user) => {
+      //   return user.socketId !== user._id;
+      // });
+      // users = [...updateUsers];
+      console.log('in joined')
 
       newUser.socketId = socket.id;
+      console.log(newUser);
       let existingUser;
       for (user of users) {
         if (user._id === newUser._id) {
           existingUser = user;
           user.socketId = socket.id;
-          io.to(socket.id).emit('JOINED', true);
+        
         }
       }
       if (!existingUser && newUser._id) {
@@ -34,7 +36,7 @@ module.exports = function (io) {
         users.push(newUser);
         console.log('user array');
         console.log(users);
-        io.to(socket.id).emit('JOINED', true);
+      ;
       }
     });
 
