@@ -8,7 +8,7 @@ module.exports = function (io) {
   let logoutInterval;
 
   io.on('connection', (socket) => {
-    //checkInactivity(socket);
+    
 
     let typingUsers = [];
     console.log('new connection');
@@ -147,7 +147,7 @@ module.exports = function (io) {
     //Listen for chatMessage
 
     socket.on('chatMessage', (username, msg, room) => {
-      checkInactivity(socket);
+     
       // const user = getCurrentUser(socket.id);
 
       const comment = {
