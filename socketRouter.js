@@ -3,53 +3,68 @@ module.exports = function (io) {
 
   const botName = 'TalkRooms';
 
-  const users = [];
+  let users = [];
   let currentRoom;
   let logoutInterval;
 
   io.on('connection', (socket) => {
     //checkInactivity(socket);
+
     let typingUsers = [];
+    console.log('new connection');
+    console.log(socket.id);
 
     socket.on('USER_JOIN', (newUser) => {
+      const updateUsers = users.filter((user) => {
+        return user.socketId === user._id;
+      });
+      users = [...updateUsers];
+
       newUser.socketId = socket.id;
       let existingUser;
       for (user of users) {
         if (user._id === newUser._id) {
           existingUser = user;
+          user.socketId = socket.id;
+          io.to(socket.id).emit('JOINED', true);
         }
       }
-      if (!existingUser) {
+      if (!existingUser && newUser._id) {
+        newUser.socketId = socket.id;
         users.push(newUser);
+        console.log('user array');
         console.log(users);
+        io.to(socket.id).emit('JOINED', true);
       }
     });
 
     socket.on('FRIEND_REQUEST', ({ friendId, userDisplayName, userId }) => {
+      console.log(friendId);
+      console.log(userId);
       let friend;
       let sender;
+      console.log('users in friend request');
+      console.log(users);
+      //TO DO: FRIEND COMES BACK UNDEFINED
       for (user of users) {
         if (user._id === friendId) {
           friend = user;
-          user.socketId = socket._id;
         }
-        if(user._id === userId) {
-          sender = user
+        if (user._id === userId) {
+          sender = user;
         }
       }
-      console.log(sender);
-      console.log(friend);
+
       if (friend) {
-        console.log('sending to: ' + friend.socketId);
+        console.log(friend.socketId);
         io.to(friend.socketId).emit('REQUEST_RECEIVED', `Friend request from ${userDisplayName}`);
       }
 
-      if(sender) {
-        console.log('sending to: ' + sender.socketId);
+      if (sender) {
+        console.log(sender.socketId);
         io.to(sender.socketId).emit('REQUEST_SENT', `Friend request sent to ${sender.displayName}`);
       }
     });
-
 
     socket.on('ACCEPT_REQUEST', (data) => {
       let friend;
@@ -59,20 +74,18 @@ module.exports = function (io) {
         if (user._id === data.receiver?.id) {
           friend = user;
         }
-        if(user._id === data.sender?._id) {
-          sender = user
+        if (user._id === data.sender?._id) {
+          sender = user;
         }
       }
-      console.log('sender: ' + sender);
-      if(friend) {
-        console.log('sending REQUEST_ACCEPTED_RECEIVER to: ' + friend.socketId);
+
+      if (friend) {
         io.to(friend.socketId).emit('REQUEST_ACCEPTED_RECEIVER', data);
       }
-      if(sender) {
-        console.log('sending REQUEST_ACCEPT_SENDER to: ' + sender.socketId);
+      if (sender) {
         io.to(sender.socketId).emit('REQUEST_ACCEPTED_SENDER', data);
       }
-    })
+    });
 
     socket.on('REJECT_REQUEST', (data) => {
       let friend;
@@ -82,45 +95,39 @@ module.exports = function (io) {
         if (user._id === data.receiver?.id) {
           friend = user;
         }
-        if(user._id === data.sender?._id) {
-          sender = user
+        if (user._id === data.sender?._id) {
+          sender = user;
         }
       }
 
-      if(friend) {
-        console.log('sending REQUEST_REJECTED_RECEIVER to: ' + friend.socketId);
+      if (friend) {
         io.to(friend.socketId).emit('REQUEST_REJECTED_RECEIVER', data);
       }
-      if(sender) {
-        console.log('sending REQUEST_ACCEPT_SENDER to: ' + sender.socketId);
+      if (sender) {
         io.to(sender.socketId).emit('REQUEST_REJECTED_SENDER', data);
       }
-    })
+    });
 
-    socket.on('CANCEL_REQUEST', (data) => { 
+    socket.on('CANCEL_REQUEST', (data) => {
       let friend;
       let sender;
-      console.log(data);
+
       for (user of users) {
         if (user._id === data.receiver?.id) {
           friend = user;
         }
-        if(user._id === data.sender?._id) {
-          sender = user
+        if (user._id === data.sender?._id) {
+          sender = user;
         }
       }
-      console.log('sender: ' + sender);
-      if(friend) {
-        console.log('sending CANCEL_REQUEST_RECEIVER to: ' + friend.socketId);
-        
+
+      if (friend) {
         io.to(friend.socketId).emit('REQUEST_CANCELED_RECEIVER', data);
       }
-      if(sender) {
-        console.log('sending CANCEL_REQUEST_SENDER to: ' + sender.socketId);
-        
+      if (sender) {
         io.to(sender.socketId).emit('REQUEST_CANCELED_SENDER', data);
       }
-    })
+    });
 
     socket.on('joinRoom', ({ username, room }) => {
       currentSocket = room;
@@ -129,13 +136,6 @@ module.exports = function (io) {
 
       socket.join(room);
 
-      //Shows to everyone else but the client
-      // socket.broadcast.to(room).emit('message', formatMessage(botName, `${username} has joined room ${room}!`));
-
-      //Shows to everyone
-      // io.emit('info', 'Hello World')
-
-      //Send users and room info
       io.to(user.room).emit('roomUsers', {
         room: user.room,
         users: getRoomUsers(user.room),
@@ -145,25 +145,22 @@ module.exports = function (io) {
     //Listen for chatMessage
 
     socket.on('chatMessage', (username, msg, room) => {
-
       checkInactivity(socket);
       // const user = getCurrentUser(socket.id);
-      console.log(msg);
+
       const comment = {
-        username, msg, room
-      }
+        username,
+        msg,
+        room,
+      };
 
       db.insertOneComment(comment);
-      console.log(room);
 
       io.to(room).emit('message', formatMessage(username, msg));
     });
 
     //check for a user typing
     socket.on('typing', (username, typing, room) => {
-
-      checkInactivity(socket);
-
       if (typing) {
         if (!typingUsers.includes(username)) {
           typingUsers.push(username);
@@ -172,30 +169,22 @@ module.exports = function (io) {
         let copy = typingUsers.filter((x) => x != username);
         typingUsers = [...copy];
       }
-      let typingOutput = "";
-      for(user of typingUsers) {
-        typingOutput += `${user} is typing... `
+      let typingOutput = '';
+      for (user of typingUsers) {
+        typingOutput += `${user} is typing... `;
       }
       console.log(typingOutput);
 
       io.to(room).emit('typingOutput', typingOutput);
-
     });
 
     // Run When Client disconnects
     socket.on('disconnect', () => {
-      console.log('disconnected...');
-      const user = userLeave(socket.id);
-      if (user) {
-        io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left...`));
-        console.log('a user has left...');
-
-        //Send users and room info
-        io.to(user.room).emit('roomUsers', {
-          room: user.room,
-          users: getRoomUsers(user.room),
-        });
-      }
+      const updatedUsers = users.filter((user) => {
+        return user.socketId !== socket.id;
+      });
+      console.log(updatedUsers);
+      users = [...updatedUsers];
     });
   });
 
@@ -213,42 +202,13 @@ module.exports = function (io) {
     const user = { id, username, room };
     const duplicateUsers = users.filter((x) => x.username === user.username && x.room === user.room);
     if (duplicateUsers.length === 0) {
-      users.push(user);
+      //users.push(user);
     }
 
     return user;
   }
 
-  function getCurrentUser(id) {
-    return users.find((user) => user.id === id);
-  }
-
-  function userLeave(id) {
-    const index = users.findIndex((user) => user.id === id);
-    if (index !== -1) {
-      return users.splice(index, 1)[0];
-    }
-  }
-
   function getRoomUsers(room) {
     return users.filter((user) => user.room === room);
-  }
-
-  function checkInactivity(socket) {
-    clearTimeout(socket.inactivityTimeout);
-    socket.inactivityTimeout = setTimeout(() => {
-      socket.disconnect(true);
-      const user = userLeave(socket.id);
-      if (user) {
-        io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left...`));
-        console.log('a user has left...');
-
-        //Send users and room info
-        io.to(user.room).emit('roomUsers', {
-          room: user.room,
-          users: getRoomUsers(user.room),
-        });
-      }
-    }, 300000);
   }
 };

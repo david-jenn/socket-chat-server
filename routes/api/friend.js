@@ -71,7 +71,7 @@ router.get(
 
     const mostRecentUniqueRequests = [];
     const uniqueRequests = [];
-    console.log(requests);
+   
     
     for (request of requests) {
       if (!mostRecentUniqueRequests.includes(request.friend.id)) {
@@ -79,7 +79,6 @@ router.get(
         uniqueRequests.push(request);
       }
     }
-    console.log(uniqueRequests);
 
     res.status(200).json(uniqueRequests);
   })
@@ -114,8 +113,7 @@ router.put(
 
 router.put('/cancel-request', asyncCatch(async (req, res,next) => {
   const connectionData = req.body;
-  console.log('connection data: ')
-  console.log(connectionData);
+
     await dbModule.cancelFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
     res.status(200).json({ message: 'Friend Request Canceled' });
   
