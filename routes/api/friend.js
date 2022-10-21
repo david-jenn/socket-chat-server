@@ -152,6 +152,19 @@ router.put(
   })
 );
 
-//TODO Add update feature to add a removed flag! to cancel requests.
+router.put('/update-unread', asyncCatch(async (req, res, next) => {
+    const update = req.body;
+    console.log(update);
+    const connectionId = update.connectionId;
+    const unreadCount = update.unreadCount
+    if(connectionId || unreadCount) {
+      await dbModule.updateUnreadConnectionMessages(connectionId, unreadCount);
+      res.status(200).json({message: 'hello'});
+    } else {
+      res.status(400).json({error: 'id or unread count not provided'})
+    }
+    
+    
+}));
 
 module.exports = router;

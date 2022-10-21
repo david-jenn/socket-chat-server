@@ -4,6 +4,8 @@ module.exports = function (io) {
   const botName = 'TalkRooms';
 
   let users = [];
+  //TO DO Array to hold userMessageObjects(hold )  unread messages for users, to send to database on disconnect;
+  let unReadMessages = []
   let currentRoom;
   let logoutInterval;
 
@@ -15,10 +17,6 @@ module.exports = function (io) {
     console.log(socket.id);
 
     socket.on('USER_JOIN', (newUser) => {
-      // const updateUsers = users.filter((user) => {
-      //   return user.socketId !== user._id;
-      // });
-      // users = [...updateUsers];
       console.log('in joined')
 
       newUser.socketId = socket.id;
@@ -131,9 +129,27 @@ module.exports = function (io) {
       }
     });
 
+    socket.on('DIRECT_MESSAGE', (data) => {
+      console.log(data);
+      const friend = users.find((user => user._id === data.friendId));
+
+      console.log('friend');
+      console.log(friend);
+      const receiverData = {
+        userId: data.friendId,
+        message: data.message,
+        friendId: data.userId
+      }
+      if(friend) {
+        io.to(friend.socketId).emit('DIRECT_MESSAGE_RECEIVED', receiverData);
+      }
+      
+    })
+
     socket.on('joinRoom', ({ username, room }) => {
       currentSocket = room;
       socket.join(room);
+      
       const user = userJoin(socket.id, username, room);
 
       socket.join(room);
@@ -147,7 +163,7 @@ module.exports = function (io) {
     //Listen for chatMessage
 
     socket.on('CHAT_MESSAGE', (displayName, userId, msg, room) => {
-      io.to(room).emit('message', formatMessage(displayName, userId, msg));
+      io.to(room).emit('message', formatMessage(displayName, userId, msg, room));
     });
 
     //check for a user typing
@@ -171,6 +187,8 @@ module.exports = function (io) {
 
     // Run When Client disconnects
     socket.on('disconnect', () => {
+      const disconnectedUser = users.find((user) => user.socketId === socket._id);
+      const recentMessages = disconnectedUser
       const updatedUsers = users.filter((user) => {
         return user.socketId !== socket.id;
       });
@@ -179,11 +197,12 @@ module.exports = function (io) {
     });
   });
 
-  function formatMessage(displayName, userId, msg) {
+  function formatMessage(displayName, userId, msg, room) {
     const obj = {
       displayName,
       userId,
       msg,
+      room,
       timestamp: new Date(),
     };
 

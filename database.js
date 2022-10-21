@@ -257,6 +257,24 @@ async function findUsersFriends(userId) {
   return friends;
 }
 
+async function updateUnreadConnectionMessages(connectionId, unReadCount) {
+  console.log('updating...')
+  console.log(connectionId);
+  const mongoId = newId(connectionId);
+  const db = await connect();
+  await db.collection('friendConnection').updateOne(
+    {
+      _id: {
+        $eq: mongoId
+      },
+    },
+    {
+      $set: {
+        unReadCount: unReadCount
+      }
+    })
+  }
+
 module.exports = {
   connect,
   insertOneComment,
@@ -279,6 +297,7 @@ module.exports = {
   cancelFriendRequests,
   findUsersFriends,
   findOneFriend,
+  updateUnreadConnectionMessages
   
 };
 
