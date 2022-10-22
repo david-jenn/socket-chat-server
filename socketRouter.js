@@ -1,5 +1,7 @@
+
+
 module.exports = function (io) {
-  const db = require('./database');
+  const dbModule = require('./database');
 
   const botName = 'TalkRooms';
 
@@ -142,6 +144,12 @@ module.exports = function (io) {
       }
       if(friend) {
         io.to(friend.socketId).emit('DIRECT_MESSAGE_RECEIVED', receiverData);
+      } else {
+        const offlineUpdate = 'OFFLINE'
+       
+        updateOfflineUnread(data.friendId, data.userId);
+        
+        
       }
       
     })
@@ -222,4 +230,8 @@ module.exports = function (io) {
   function getRoomUsers(room) {
     return users.filter((user) => user.room === room);
   }
+  async function updateOfflineUnread(userId, friendId) {
+    const friend = await dbModule.findOneFriend(userId, friendId);
+    await dbModule.updateUnreadConnectionMessages(friend._id, 'OFFLINE');
+  } 
 };

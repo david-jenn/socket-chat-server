@@ -29,8 +29,8 @@ async function insertDirectChatRoom(roomId) {
 
   await db.collection('directChatRoom').insertOne({
     _id: roomId,
-    timestamp: new Date()
-  })
+    timestamp: new Date(),
+  });
 }
 
 async function findDirectChatById(id) {
@@ -42,7 +42,6 @@ async function findDirectChatById(id) {
   });
   return room;
 }
-
 
 //Deprecated
 // async function insertNewRoom(room) {
@@ -150,11 +149,11 @@ async function findUserFriendRequests(userId) {
         $eq: userId,
       },
       accepted: {
-        $eq: false
+        $eq: false,
       },
       canceled: {
-        $ne: true
-      }
+        $ne: true,
+      },
     })
     .toArray();
   return requests;
@@ -169,11 +168,11 @@ async function findSentFriendRequests(userId) {
         $eq: userId,
       },
       accepted: {
-        $eq: false
+        $eq: false,
       },
       canceled: {
-        $ne: true
-      }
+        $ne: true,
+      },
     })
     .toArray();
   return requests;
@@ -213,7 +212,7 @@ async function acceptFriendRequests(userId, friendId) {
     },
     {
       $set: {
-        accepted: true
+        accepted: true,
       },
     }
   );
@@ -231,15 +230,14 @@ async function cancelFriendRequests(userId, friendId) {
     },
     {
       $set: {
-        canceled: true
+        canceled: true,
       },
     },
     {
       $set: {
-        accepted: false
-      }
+        accepted: false,
+      },
     }
-
   );
 }
 
@@ -258,22 +256,41 @@ async function findUsersFriends(userId) {
 }
 
 async function updateUnreadConnectionMessages(connectionId, unReadCount) {
-  console.log('updating...')
+  console.log('updating...');
   console.log(connectionId);
   const mongoId = newId(connectionId);
   const db = await connect();
-  await db.collection('friendConnection').updateOne(
-    {
-      _id: {
-        $eq: mongoId
+  if (unReadCount === 'OFFLINE') {
+    console.log('in here');
+    await db.collection('friendConnection').updateOne(
+      {
+        _id: {
+          $eq: mongoId,
+        },
       },
-    },
-    {
-      $set: {
-        unReadCount: unReadCount
+      {
+        $inc: {
+          unReadCount: 1,
+        },
       }
-    })
+    );
+  } else {
+    console.log('updating offline user...');
+
+    await db.collection('friendConnection').updateOne(
+      {
+        _id: {
+          $eq: mongoId,
+        },
+      },
+      {
+        $set: {
+          unReadCount: unReadCount,
+        },
+      }
+    );
   }
+}
 
 module.exports = {
   connect,
@@ -297,8 +314,7 @@ module.exports = {
   cancelFriendRequests,
   findUsersFriends,
   findOneFriend,
-  updateUnreadConnectionMessages
-  
+  updateUnreadConnectionMessages,
 };
 
 ping();
