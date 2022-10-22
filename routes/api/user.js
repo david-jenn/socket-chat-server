@@ -6,7 +6,7 @@ const asyncCatch = require('../../middleware/async-catch');
 const jwt = require('jsonwebtoken');
 
 const Joi = require('joi');
-const validBody = require('../../middleware/valid-body');
+const joiValidate = require('../../middleware/joi-validate');
 
 //schema
 
@@ -14,6 +14,7 @@ const registerUserSchema = Joi.object({
   email: Joi.string().trim().min(3).email().required(),
   displayName: Joi.string().trim().min(3).required(),
   password: Joi.string().trim().min(8).required(),
+  fullName: Joi.string().trim().min(2).required(),
 });
 
 const loginUserSchema = Joi.object({
@@ -66,7 +67,7 @@ router.get(
 router.get(
   '/:userId',
   asyncCatch(async (req, res, next) => {
-    const io = req.app.get('io');
+    
     const userId = req.params.userId;
     const userIdObject = dbModule.newId(userId);
     const user = await dbModule.findUserById(userIdObject);
@@ -82,9 +83,10 @@ router.get(
 
 router.post(
   '/register',
-  validBody(registerUserSchema),
+  joiValidate(registerUserSchema),
   asyncCatch(async (req, res, next) => {
     const user = req.body;
+    
     user._id = dbModule.newId();
     user.createdDate = new Date();
 
@@ -119,7 +121,7 @@ router.post(
 
 router.post(
   '/login',
-  validBody(loginUserSchema),
+  joiValidate(loginUserSchema),
   asyncCatch(async (req, res, next) => {
     const { email, password } = req.body;
 

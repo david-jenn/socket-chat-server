@@ -69,6 +69,7 @@ module.exports = function (io) {
     });
 
     socket.on('ACCEPT_REQUEST', (data) => {
+      console.log('in accepted server...');
       let friend;
       let sender;
 
@@ -81,17 +82,28 @@ module.exports = function (io) {
         }
       }
 
+      console.log(friend)
+      console.log(sender);
+
       if (friend) {
-        io.to(friend.socketId).emit('REQUEST_ACCEPTED_RECEIVER', data);
+        console.log('sending to friend ' + friend.socketId)
+        io.to(friend.socketId).emit('REQUEST_ACCEPTED_RECEIVER', data)
+        io.to(friend.socketId).emit('REQUEST_ACCEPTED_RECEIVER_LIST', data)
+
       }
       if (sender) {
+        console.log('sending to you '+ sender.socketId)
         io.to(sender.socketId).emit('REQUEST_ACCEPTED_SENDER', data);
+        io.to(sender.socketId).emit('REQUEST_ACCEPTED_SENDER_LIST', data);
+  
+
       }
     });
 
     socket.on('REJECT_REQUEST', (data) => {
       let friend;
       let sender;
+      console.log(data);
 
       for (user of users) {
         if (user._id === data.receiver?.id) {

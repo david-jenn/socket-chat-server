@@ -1,12 +1,53 @@
 const express = require('express');
 const { Timestamp } = require('mongodb');
 const dbModule = require('../../database');
-
-
+const Joi = require('joi');
 
 const asyncCatch = require('../../middleware/async-catch');
+const joiValidate = require('../../middleware/joi-validate');
 
 const router = express.Router();
+
+const sendFriendRequestSchema = Joi.object({
+  sender: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required(),
+  }).required(),
+  friend: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required(),
+  }).required(),
+
+  accepted: Joi.boolean().required(),
+  cancelled: Joi.boolean().required(),
+});
+
+const cancelFriendRequestSchema = Joi.object({
+  connectionOne: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required(),
+  }).required(),
+  connectionTwo: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required(),
+  }),
+});
+
+const acceptFriendRequestSchema = Joi.object({
+  connectionOne: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required()
+  }),
+  connectionTwo: Joi.object({
+    id: Joi.string().required(),
+    displayName: Joi.string().required(),
+  })
+})
+
+const updateUnreadSchema = Joi.object({
+  connectionId: Joi.string().required(),
+  unreadCount: Joi.number(),
+})
 
 router.get(
   '/friend-list/:userId',
@@ -26,7 +67,7 @@ router.get(
   asyncCatch(async (req, res, next) => {
     const userId = req.params.userId;
     const friendId = req.params.friendId;
-    
+
     const friend = await dbModule.findOneFriend(userId, friendId);
     if (!friend) {
       res.status(404).json({ error: 'Friend not found' });
@@ -71,8 +112,7 @@ router.get(
 
     const mostRecentUniqueRequests = [];
     const uniqueRequests = [];
-   
-    
+
     for (request of requests) {
       if (!mostRecentUniqueRequests.includes(request.friend.id)) {
         mostRecentUniqueRequests.push(request.friend.id);
@@ -84,24 +124,21 @@ router.get(
   })
 );
 
-
-
-
-
 router.put(
   '/send-request',
+  joiValidate(sendFriendRequestSchema),
   asyncCatch(async (req, res, next) => {
     const io = req.app.get('io');
     // io.emit('test', 'testing send request')
     const friendRequest = req.body;
     const userId = req.body.sender?.id;
-    const friendId = req.body.friend?.id; 
+    const friendId = req.body.friend?.id;
     const existingFriend = await dbModule.findOneFriend(userId, friendId);
-    
-    if(friendId === userId) {
-      res.status(400).json({error: `Cannot friend request yourself`});
+
+    if (friendId === userId) {
+      res.status(400).json({ error: `Cannot friend request yourself` });
     }
-   
+
     if (existingFriend) {
       res.status(400).json({ error: `Already friends with this person` });
     } else {
@@ -111,16 +148,20 @@ router.put(
   })
 );
 
-router.put('/cancel-request', asyncCatch(async (req, res,next) => {
-  const connectionData = req.body;
+router.put(
+  '/cancel-request',
+  joiValidate(cancelFriendRequestSchema),
+  asyncCatch(async (req, res, next) => {
+    const connectionData = req.body;
 
     await dbModule.cancelFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
     res.status(200).json({ message: 'Friend Request Canceled' });
-  
-}))
+  })
+);
 
 router.put(
   '/accept-request',
+  // joiValidate(acceptFriendRequestSchema),
   asyncCatch(async (req, res, next) => {
     const connectionData = req.body;
 
@@ -137,8 +178,8 @@ router.put(
       connectionData.connectionOne.id,
       connectionData.connectionTwo.id
     );
-    if(connectionData.connectionOne.id === connectionData.connectionTwo.id) {
-      res.status(400).json({error: 'Cannot accept request from yourself'});
+    if (connectionData.connectionOne.id === connectionData.connectionTwo.id) {
+      res.status(400).json({ error: 'Cannot accept request from yourself' });
     }
     if (existingFriend) {
       res.status(400).json({ error: 'Friend already exists' });
@@ -152,19 +193,20 @@ router.put(
   })
 );
 
-router.put('/update-unread', asyncCatch(async (req, res, next) => {
+router.put(
+  '/update-unread',
+  asyncCatch(async (req, res, next) => {
     const update = req.body;
     console.log(update);
     const connectionId = update.connectionId;
-    const unreadCount = update.unreadCount
-    if(connectionId || unreadCount) {
+    const unreadCount = update.unreadCount;
+    if (connectionId && unreadCount) {
       await dbModule.updateUnreadConnectionMessages(connectionId, unreadCount);
-      res.status(200).json({message: 'hello'});
+      res.status(200).json({ message: 'hello' });
     } else {
-      res.status(400).json({error: 'id or unread count not provided'})
+      res.status(400).json({ error: 'id or unread count not provided' });
     }
-    
-    
-}));
+  })
+);
 
 module.exports = router;
