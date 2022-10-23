@@ -168,22 +168,25 @@ router.put(
     const connectionOne = {
       userId: connectionData.connectionOne.id,
       friend: connectionData.connectionTwo,
+      unReadCount: 0,
     };
     const connectionTwo = {
       userId: connectionData.connectionTwo.id,
       friend: connectionData.connectionOne,
+      unReadCount: 0,
     };
 
     const existingFriend = await dbModule.findOneFriend(
       connectionData.connectionOne.id,
       connectionData.connectionTwo.id
-    );
+    )
     if (connectionData.connectionOne.id === connectionData.connectionTwo.id) {
       res.status(400).json({ error: 'Cannot accept request from yourself' });
     }
     if (existingFriend) {
       res.status(400).json({ error: 'Friend already exists' });
     } else {
+      
       await dbModule.insertNewFriendConnection(connectionOne);
       await dbModule.insertNewFriendConnection(connectionTwo);
       await dbModule.acceptFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
