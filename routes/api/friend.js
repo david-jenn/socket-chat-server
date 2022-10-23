@@ -161,7 +161,7 @@ router.put(
 
 router.put(
   '/accept-request',
-  // joiValidate(acceptFriendRequestSchema),
+  joiValidate(acceptFriendRequestSchema),
   asyncCatch(async (req, res, next) => {
     const connectionData = req.body;
 
@@ -195,12 +195,13 @@ router.put(
 
 router.put(
   '/update-unread',
+  joiValidate(updateUnreadSchema),
   asyncCatch(async (req, res, next) => {
     const update = req.body;
     console.log(update);
     const connectionId = update.connectionId;
     const unreadCount = update.unreadCount;
-    if (connectionId && unreadCount) {
+    if (connectionId) {
       await dbModule.updateUnreadConnectionMessages(connectionId, unreadCount);
       res.status(200).json({ message: 'hello' });
     } else {
