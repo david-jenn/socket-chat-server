@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/comment', require('./routes/api/comment'));
 app.use('/api/user', require('./routes/api/user'));
 app.use('/api/room', require('./routes/api/room'));
+app.use('/api/group', require('./routes/api/group'));
 app.use('/api/friend', require('./routes/api/friend'))
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');

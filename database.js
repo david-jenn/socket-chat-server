@@ -315,6 +315,16 @@ async function updateUnreadConnectionMessages(connectionId, unReadCount) {
   }
 }
 
+async function insertOneGroup(group) {
+  const db = await connect();
+  await db.collection('group').insertOne(group);
+}
+
+async function insertOneGroupConnection(connection) {
+  const db = await connect();
+  await db.collection('groupConnection').insertOne(connection);
+}
+
 module.exports = {
   connect,
   insertOneComment,
@@ -338,7 +348,9 @@ module.exports = {
   findUsersFriends,
   findOneFriend,
   updateUnreadConnectionMessages,
-  removeFriendConnection
+  removeFriendConnection,
+  insertOneGroup,
+  insertOneGroupConnection
 };
 
 ping();
