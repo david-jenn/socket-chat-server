@@ -36,18 +36,18 @@ const cancelFriendRequestSchema = Joi.object({
 const acceptFriendRequestSchema = Joi.object({
   connectionOne: Joi.object({
     id: Joi.string().required(),
-    displayName: Joi.string().required()
+    displayName: Joi.string().required(),
   }),
   connectionTwo: Joi.object({
     id: Joi.string().required(),
     displayName: Joi.string().required(),
-  })
-})
+  }),
+});
 
 const updateUnreadSchema = Joi.object({
   connectionId: Joi.string().required(),
   unreadCount: Joi.number(),
-})
+});
 
 router.get(
   '/friend-list/:userId',
@@ -134,12 +134,12 @@ router.put(
     const userId = req.body.sender?.id;
     const friendId = req.body.friend?.id;
     const existingFriend = await dbModule.findOneFriend(userId, friendId);
-
+    console.log(existingFriend);
     if (friendId === userId) {
       res.status(400).json({ error: `Cannot friend request yourself` });
     }
 
-    if (existingFriend) {
+    if (existingFriend && !existingFriend.removed) {
       res.status(400).json({ error: `Already friends with this person` });
     } else {
       await dbModule.insertFriendRequest(friendRequest);
@@ -179,19 +179,35 @@ router.put(
     const existingFriend = await dbModule.findOneFriend(
       connectionData.connectionOne.id,
       connectionData.connectionTwo.id
-    )
+    );
+    
     if (connectionData.connectionOne.id === connectionData.connectionTwo.id) {
       res.status(400).json({ error: 'Cannot accept request from yourself' });
     }
-    if (existingFriend) {
+    if (existingFriend && !existingFriend.removed) {
       res.status(400).json({ error: 'Friend already exists' });
     } else {
-      
       await dbModule.insertNewFriendConnection(connectionOne);
       await dbModule.insertNewFriendConnection(connectionTwo);
       await dbModule.acceptFriendRequests(connectionData.connectionOne.id, connectionData.connectionTwo.id);
 
       res.status(200).json({ message: 'Friend added!' });
+    }
+  })
+);
+
+router.put(
+  '/remove-friend',
+  asyncCatch(async (req, res, next) => {
+    const userId = req.body.userId;
+    const friendId = req.body.friendId;
+
+    if (friendId && userId) {
+      await dbModule.removeFriendConnection(userId, friendId);
+      await dbModule.removeFriendConnection(friendId, userId);
+      res.status(200).json({ msg: 'friend Removed' });
+    } else {
+      res.status(400).json({ error: 'Error receiving ids' });
     }
   })
 );

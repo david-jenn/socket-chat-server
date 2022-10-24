@@ -195,7 +195,7 @@ async function findOneFriend(userId, friendId) {
 
 async function insertNewFriendConnection(friendConnection) {
   const db = await connect();
-
+  friendConnection.removed = false;
   await db.collection('friendConnection').insertOne(friendConnection);
 }
 
@@ -249,10 +249,33 @@ async function findUsersFriends(userId) {
       userId: {
         $eq: userId,
       },
+
+      removed: {
+        $ne: true,
+      },
     })
     .toArray();
 
   return friends;
+}
+
+async function removeFriendConnection(userId, friendId) {
+  const db = await connect();
+  await db.collection('friendConnection').updateMany(
+    {
+      userId: {
+        $eq: userId,
+      },
+      'friend.id': {
+        $eq: friendId,
+      },
+    },
+    {
+      $set: {
+        removed: true,
+      },
+    }
+  );
 }
 
 async function updateUnreadConnectionMessages(connectionId, unReadCount) {
@@ -315,6 +338,7 @@ module.exports = {
   findUsersFriends,
   findOneFriend,
   updateUnreadConnectionMessages,
+  removeFriendConnection
 };
 
 ping();

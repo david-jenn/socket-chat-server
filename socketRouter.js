@@ -1,3 +1,4 @@
+const { Socket } = require('socket.io');
 
 
 module.exports = function (io) {
@@ -143,6 +144,23 @@ module.exports = function (io) {
       }
     });
 
+    socket.on('REMOVE_FRIEND', (data) => {
+      console.log(data);
+      const friend = users.find((user) => user._id === data.receiver.id );
+      const sender = users.find((user) => user._id === data.sender._id);
+      
+      if(friend) {
+        console.log('sending to receiver REMOVE  ' + friend.socketId)
+        io.to(friend.socketId).emit('FRIEND_REMOVED_RECEIVER', data);
+      }
+      if(sender) {
+        console.log('sending to sender REMOVE  ' + sender.socketId)
+        io.to(sender.socketId).emit('FRIEND_REMOVED_SENDER', data);
+      }
+
+
+    })
+
     socket.on('DIRECT_MESSAGE', (data) => {
       console.log(data);
       const friend = users.find((user => user._id === data.friendId));
@@ -187,22 +205,15 @@ module.exports = function (io) {
     });
 
     //check for a user typing
-    socket.on('typing', (username, typing, room) => {
+    socket.on('typing', (userId, typing, room) => {
       if (typing) {
-        if (!typingUsers.includes(username)) {
-          typingUsers.push(username);
-        }
+        io.to(room).emit('typingOutput', userId);
       } else {
-        let copy = typingUsers.filter((x) => x != username);
-        typingUsers = [...copy];
+        io.to(room).emit('typingOutput', null);
       }
-      let typingOutput = '';
-      for (user of typingUsers) {
-        typingOutput += `${user} is typing... `;
-      }
-      console.log(typingOutput);
+      
 
-      io.to(room).emit('typingOutput', typingOutput);
+      
     });
 
     // Run When Client disconnects
