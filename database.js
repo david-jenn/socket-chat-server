@@ -284,7 +284,7 @@ async function updateUnreadConnectionMessages(connectionId, unReadCount) {
   const mongoId = newId(connectionId);
   const db = await connect();
   if (unReadCount === 'OFFLINE') {
-    console.log('in here');
+    console.log('updating offline user...');
     await db.collection('friendConnection').updateOne(
       {
         _id: {
@@ -298,9 +298,9 @@ async function updateUnreadConnectionMessages(connectionId, unReadCount) {
       }
     );
   } else {
-    console.log('updating offline user...');
-
+    console.log('updating Online users');
     await db.collection('friendConnection').updateOne(
+      
       {
         _id: {
           $eq: mongoId,

@@ -41,6 +41,15 @@ module.exports = function (io) {
       }
     });
 
+    socket.on('USER_LEAVE', (userId) => {
+      console.log('in user leave');
+      const updatedUsers = users.filter((user) => {
+        return user._id !== userId;
+      });
+      console.log(updatedUsers);
+      users = [...updatedUsers];
+    })
+
     socket.on('FRIEND_REQUEST', ({ friendId, userDisplayName, userId }) => {
       console.log(friendId);
       console.log(userId);
@@ -163,7 +172,7 @@ module.exports = function (io) {
 
     socket.on('DIRECT_MESSAGE', (data) => {
       console.log(data);
-      const friend = users.find((user => user._id === data.friendId));
+      const friend = users.find((user) => user._id === data.friendId);
 
       console.log('friend');
       console.log(friend);
@@ -175,12 +184,9 @@ module.exports = function (io) {
       if(friend) {
         io.to(friend.socketId).emit('DIRECT_MESSAGE_RECEIVED', receiverData);
       } else {
-        const offlineUpdate = 'OFFLINE'
-       
-        updateOfflineUnread(data.friendId, data.userId);
-        
-        
+        updateUnread(data.friendId, data.userId);
       }
+      
       
     })
 
@@ -191,7 +197,7 @@ module.exports = function (io) {
       const user = userJoin(socket.id, username, room);
 
       socket.join(room);
-
+      console.log(users.length);
       io.to(user.room).emit('roomUsers', {
         room: user.room,
         users: getRoomUsers(user.room),
@@ -218,8 +224,6 @@ module.exports = function (io) {
 
     // Run When Client disconnects
     socket.on('disconnect', () => {
-      const disconnectedUser = users.find((user) => user.socketId === socket._id);
-      const recentMessages = disconnectedUser
       const updatedUsers = users.filter((user) => {
         return user.socketId !== socket.id;
       });
@@ -253,7 +257,11 @@ module.exports = function (io) {
   function getRoomUsers(room) {
     return users.filter((user) => user.room === room);
   }
-  async function updateOfflineUnread(userId, friendId) {
+  async function updateUnread(userId, friendId) {
+    
+    console.log('userId:' +userId);
+    console.log('friendId:' + friendId);
+    console.log('in offline update')
     const friend = await dbModule.findOneFriend(userId, friendId);
     await dbModule.updateUnreadConnectionMessages(friend._id, 'OFFLINE');
   } 
