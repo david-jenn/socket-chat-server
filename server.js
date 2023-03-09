@@ -45,7 +45,7 @@ const server = app.listen(port, () => {
 const io = require('socket.io')(server, {
  
   cors: {
-    origin: ['https://talk-rooms-david-jenn.herokuapp.com', 'http://localhost:3000' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
+    origin: ['https://talk-rooms-david-jenn.onrender.com', 'http://localhost:3000' ], //https://talk-rooms-david-jenn.herokuapp.com http://localhost:3000
     credentials: true,
    },
 });
